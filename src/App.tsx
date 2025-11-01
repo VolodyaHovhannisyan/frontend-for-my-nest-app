@@ -1,12 +1,19 @@
-import Navbar from "./components/Navbar";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import HomePage from "./pages/HomePage";
+import AuthPage from "./pages/AuthPage";
+import Navbar from "./components/Navbar";
+import { useAuthStore } from "./store/authStore";
 
 function App() {
+  const { user } = useAuthStore();
+
   return (
-    <div className="bg-gray-100 min-h-screen">
+    <BrowserRouter>
       <Navbar />
-      <HomePage />
-    </div>
+      <Routes>
+        <Route path="/" element={user ? <HomePage /> : <AuthPage />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
 
