@@ -1,36 +1,21 @@
-import { useEffect, useState } from "react";
-import api from "../services/api";
-
-interface Product {
-  id: number;
-  name: string;
-  price: number;
-}
+import ProductForm from "../components/ProductForm";
+import ProductCard from "../components/ProductCard";
+import { useProducts } from "../hooks/useProducts";
 
 export default function HomePage() {
-  const [products, setProducts] = useState<Product[]>([]);
+  const { products, loading, error, addProduct, deleteProduct } = useProducts();
 
-  useEffect(() => {
-    api.get("/products")
-      .then((res) => setProducts(res.data))
-      .catch(() => alert("Error fetching products"));
-  }, []);
-  
+  if (loading) return <p className="text-center mt-10">Loading...</p>;
+  if (error) return <p className="text-center mt-10 text-red-600">{error}</p>;
 
   return (
-    <div className="max-w-xl mx-auto mt-10">
-      <h1 className="text-2xl font-bold mb-4 text-center">Product List</h1>
-      <ul className="space-y-3">
+    <div className="max-w-xl mx-auto mt-10 space-y-6">
+      <ProductForm onSubmit={addProduct} />
+      <div className="space-y-3">
         {products.map((p) => (
-          <li
-            key={p.id}
-            className="p-4 bg-white shadow rounded-2xl flex justify-between"
-          >
-            <span>{p.name}</span>
-            <span className="text-gray-500">${p.price}</span>
-          </li>
+          <ProductCard key={p.id} product={p} onDelete={deleteProduct} />
         ))}
-      </ul>
+      </div>
     </div>
   );
 }
