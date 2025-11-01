@@ -1,9 +1,22 @@
-import ProductForm from "../components/ProductForm";
+import { useEffect } from "react";
 import ProductCard from "../components/ProductCard";
-import { useProducts } from "../hooks/useProducts";
+import ProductForm from "../components/ProductForm";
+import { useProductStore } from "../store/productStore";
 
 export default function HomePage() {
-  const { products, loading, error, addProduct, deleteProduct,editProduct } = useProducts();
+  const {
+    products,
+    loading,
+    error,
+    fetchProducts,
+    addProduct,
+    editProduct,
+    deleteProduct,
+  } = useProductStore();
+
+  useEffect(() => {
+    fetchProducts();
+  }, [fetchProducts]);
 
   if (loading) return <p className="text-center mt-10">Loading...</p>;
   if (error) return <p className="text-center mt-10 text-red-600">{error}</p>;
