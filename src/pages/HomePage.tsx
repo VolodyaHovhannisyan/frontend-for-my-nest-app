@@ -3,7 +3,7 @@ import ProductCard from "../components/ProductCard";
 import { useProducts } from "../hooks/useProducts";
 
 export default function HomePage() {
-  const { products, loading, error, addProduct, deleteProduct } = useProducts();
+  const { products, loading, error, addProduct, deleteProduct,editProduct } = useProducts();
 
   if (loading) return <p className="text-center mt-10">Loading...</p>;
   if (error) return <p className="text-center mt-10 text-red-600">{error}</p>;
@@ -13,7 +13,12 @@ export default function HomePage() {
       <ProductForm onSubmit={addProduct} />
       <div className="space-y-3">
         {products.map((p) => (
-          <ProductCard key={p.id} product={p} onDelete={deleteProduct} />
+          <ProductCard
+            key={p.id}
+            product={p}
+            onDelete={deleteProduct}
+            onEdit={editProduct}
+          />
         ))}
       </div>
     </div>

@@ -43,9 +43,21 @@ export const useProducts = () => {
     }
   };
 
+  const editProduct = async (updated: Product) => {
+    if (!updated.id) return;
+    try {
+      // Optimistic UI update
+      setProducts((prev) => prev.map((p) => (p.id === updated.id ? updated : p)));
+      await api.patch(`/products/${updated.id}`, updated);
+    } catch {
+      setError("Failed to update product");
+      await fetchProducts(); // revert on error
+    }
+  };
+
   useEffect(() => {
     fetchProducts();
   }, []);
 
-  return { products, loading, error, addProduct, deleteProduct };
+  return { products, loading, error, addProduct, deleteProduct, editProduct };
 };
