@@ -36,6 +36,13 @@ export default function ProductCard({ product, onDelete, onEdit }: Props) {
         </div>
       ) : (
         <div>
+          {product.imageUrl && (
+            <img
+              src={product.imageUrl}
+              alt={product.name}
+              className="w-16 h-16 object-cover rounded-xl"
+            />
+          )}
           <h3 className="font-semibold">{product.name}</h3>
           <p className="text-gray-500 dark:text-amber-400">${product.price}</p>
         </div>
@@ -47,7 +54,10 @@ export default function ProductCard({ product, onDelete, onEdit }: Props) {
         ) : (
           <Button onClick={() => setIsEditing(true)}>Edit</Button>
         )}
-        <Button onClick={() => product.id && onDelete(product.id)} className="bg-red-500 hover:bg-red-700">
+        <Button
+          onClick={() => product.id && onDelete(product.id)}
+          className="bg-red-500 hover:bg-red-700"
+        >
           Delete
         </Button>
       </div>
