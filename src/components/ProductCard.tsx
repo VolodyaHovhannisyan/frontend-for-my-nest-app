@@ -40,7 +40,7 @@ export default function ProductCard({ product, onDelete, onEdit }: Props) {
             <img
               src={product.imageUrl}
               alt={product.name}
-              className="w-16 h-16 object-cover rounded-xl"
+              className="w-16 h-16 object-cover rounded-xl hover:h-[300px] hover:w-[400px] transition-all"
             />
           )}
           <h3 className="font-semibold">{product.name}</h3>
