@@ -10,22 +10,27 @@ interface AuthState {
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
-  user: null,
-  token: null,
+  user: JSON.parse(localStorage.getItem("user") || "null"),
+  token: localStorage.getItem("token"),
 
   login: async (email, password) => {
     const res = await api.post("/auth/login", { email, password });
     api.defaults.headers.common["Authorization"] = `Bearer ${res.data.token}`;
+    localStorage.setItem("user", JSON.stringify(res.data.user));
+    localStorage.setItem("token", res.data.token);
     set({ user: res.data.user, token: res.data.token });
   },
 
   register: async (email, password) => {
     const res = await api.post("/auth/register", { email, password });
     api.defaults.headers.common["Authorization"] = `Bearer ${res.data.token}`;
+    localStorage.setItem("user", JSON.stringify(res.data.user));
+    localStorage.setItem("token", res.data.token);
     set({ user: res.data.user, token: res.data.token });
   },
 
   logout: () => {
+    localStorage.clear();
     delete api.defaults.headers.common["Authorization"];
     set({ user: null, token: null });
   },
