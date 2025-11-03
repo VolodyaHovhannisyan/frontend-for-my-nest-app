@@ -17,7 +17,7 @@ export const useProducts = () => {
     try {
       setLoading(true);
       const res = await api.get("/products");
-      setProducts(res.data);
+      setProducts(res.data?.data);
     } catch (err) {
       setError("Failed to fetch products");
       console.log(err)

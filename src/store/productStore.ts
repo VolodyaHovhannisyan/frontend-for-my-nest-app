@@ -5,34 +5,67 @@ export interface Product {
   id?: number;
   name: string;
   price: number;
+  imageUrl?: string
 }
 
 interface ProductState {
   products: Product[];
   loading: boolean;
   error: string | null;
-  fetchProducts: () => Promise<void>;
+  fetchProducts: (page?: number, search?: string) => Promise<void>
   addProduct: (product: Product) => Promise<void>;
   editProduct: (product: Product) => Promise<void>;
   deleteProduct: (id: number) => Promise<void>;
+  setSearch: (value: string) => void
+  nextPage: () => void
+  prevPage: () => void
+  page: number
+  totalPages: number
+  search: string
 }
 
-export const useProductStore = create<ProductState>((set) => ({
+export const useProductStore = create<ProductState>((set, get) => ({
   products: [],
   loading: false,
   error: null,
+  page: 1,
+  totalPages: 1,
+  search: '',
 
-  fetchProducts: async () => {
+  fetchProducts: async (page = get().page, search = get().search) => {
     try {
       set({ loading: true });
-      const res = await api.get("/products");
-      set({ products: res.data, loading: false });
+      const res = await api.get("/products", {
+        params: { page, limit: 2, search },
+      });
+      set({
+        products: res.data.data,
+        totalPages: res.data.totalPages,
+        page: res.data.page,
+        loading: false
+      });
     } catch (err) {
       set({ error: "Failed to load products", loading: false });
       console.log(err);
-      
+    } finally {
+      set({ loading: false })
     }
   },
+
+  setSearch: (value) => {
+    set({ search: value, page: 1 })
+  },
+
+  nextPage: () => {
+    const { page, totalPages } = get()
+    if (page < totalPages) get().fetchProducts(page + 1)
+  },
+
+  prevPage: () => {
+    const { page } = get()
+    if (page > 1) get().fetchProducts(page - 1)
+  },
+
 
   addProduct: async (product) => {
     try {
@@ -51,7 +84,7 @@ export const useProductStore = create<ProductState>((set) => ({
           p.id === product.id ? product : p
         ),
       }));
-      await api.put(`/products/${product.id}`, product);
+      await api.patch(`/products/${product.id}`, product);
     } catch {
       set({ error: "Failed to edit product" });
     }
