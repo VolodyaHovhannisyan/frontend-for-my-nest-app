@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-// import ProductCard from "../components/ProductCard";
+import ProductCard from "../components/ProductCard";
 import ProductForm from "../components/ProductForm";
 import { useProductStore } from "../store/productStore";
 import ProductList from "../components/ProductList";
@@ -11,8 +11,8 @@ export default function HomePage() {
     error,
     fetchProducts,
     addProduct,
-    // editProduct,
-    // deleteProduct,
+    editProduct,
+    deleteProduct,
   } = useProductStore();
 
   console.log({products});
@@ -30,14 +30,14 @@ export default function HomePage() {
     <div className="max-w-xl mx-auto mt-10 space-y-6">
       <ProductForm onSubmit={addProduct} />
       <div className="space-y-3">
-        {/* {products.map((p) => (
+        {products.map((p) => (
           <ProductCard
             key={p.id}
             product={p}
             onDelete={deleteProduct}
             onEdit={editProduct}
           />
-        ))} */}
+        ))}
         <ProductList />
       </div>
     </div>

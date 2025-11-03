@@ -1,6 +1,7 @@
 import { useState } from "react";
 import type { Product } from "../hooks/useProducts";
 import api from "../services/api";
+import { useAuthStore } from "../store/authStore";
 
 interface Props {
   onSubmit: (product: Product) => void;
@@ -28,6 +29,12 @@ export default function ProductForm({ onSubmit }: Props) {
     setPrice("");
     setFile(null);
   };
+
+  const { isAdmin } = useAuthStore();
+
+  if (!isAdmin()) {
+    return <p className="text-center text-red-500 mt-8">Access Denied</p>;
+  }
 
   return (
     <form
