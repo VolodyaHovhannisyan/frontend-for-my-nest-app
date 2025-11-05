@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import api from "../services/api";
+import { persist } from "zustand/middleware";
 
 interface User {
   id: number
@@ -14,41 +15,61 @@ interface AuthState {
   register: (email: string, password: string) => Promise<void>;
   logout: () => void;
   isAdmin: () => boolean
+  checkAuth: () => void
   loading: boolean
 }
 
-export const useAuthStore = create<AuthState>((set, get) => ({
-  user: JSON.parse(localStorage.getItem("user") || "null"),
-  token: localStorage.getItem("token"),
-  loading: false,
+export const useAuthStore = create<AuthState>()(
+  persist(
+    (set, get) => ({
+      user: JSON.parse(localStorage.getItem("user") || "null"),
+      token: localStorage.getItem("token"),
+      loading: false,
 
-  login: async (email, password) => {
-    set({ loading: true })
+      login: async (email, password) => {
+        set({ loading: true })
+       
+        const res = await api.post("/auth/login", { email, password });
+        const { token, user } = res.data;
+        api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
 
-    const res = await api.post("/auth/login", { email, password });
+        set({ user, token, loading: false });
+      },
 
-    const { token, user } = res.data
+      register: async (email, password) => {
+        const res = await api.post("/auth/register", { email, password });
+        const { token, user } = res.data;
+        api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+        set({ token, user });
+      },
 
-    api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-    localStorage.setItem("user", JSON.stringify(res.data.user));
-    localStorage.setItem('token', token)
-    set({ user, token, loading: false });
-  },
+      logout: () => {
+        set({ token: null, user: null });
+        delete api.defaults.headers.common["Authorization"];
+        localStorage.removeItem("auth-storage");
+      },
 
-  register: async (email, password) => {
-    const res = await api.post("/auth/register", { email, password });
-    api.defaults.headers.common["Authorization"] = `Bearer ${res.data.token}`;
-    localStorage.setItem("user", JSON.stringify(res.data.user));
-    localStorage.setItem("token", res.data.token);
-    set({ user: res.data.user, token: res.data.token });
-  },
+      checkAuth: async () => {
+        const { token } = get();
+        if (!token) return;
+        api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+        try {
+          const res = await api.get("/auth/me");
+          set({ user: res.data });
+        } catch {
+          get().logout();
+        }
 
-  logout: () => {
-    localStorage.clear();
-    delete api.defaults.headers.common["Authorization"];
-    set({ user: null, token: null });
-  },
+      },
 
-  isAdmin: () => get().user?.role === 'ADMIN',
+      isAdmin: () => get().user?.role === 'ADMIN',
 
-}));
+    })
+    , {
+      name: "auth-storage",
+      partialize: (state) => ({
+        token: state.token, user: state.user
+      })
+    }
+  )
+);
