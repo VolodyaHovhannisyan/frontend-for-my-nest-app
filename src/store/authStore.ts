@@ -17,6 +17,8 @@ interface AuthState {
   isAdmin: () => boolean
   checkAuth: () => void
   loading: boolean
+  setToken: (token: string | null) => void;
+
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -26,14 +28,27 @@ export const useAuthStore = create<AuthState>()(
       token: localStorage.getItem("token"),
       loading: false,
 
-      login: async (email, password) => {
-        set({ loading: true })
-       
-        const res = await api.post("/auth/login", { email, password });
-        const { token, user } = res.data;
-        api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+      setToken: (token) => {
+        if (token) api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+        else delete api.defaults.headers.common["Authorization"];
+        set({ token });
+      },
 
-        set({ user, token, loading: false });
+      // login: async (email, password) => {
+      //   set({ loading: true })
+       
+      //   const res = await api.post("/auth/login", { email, password });
+      //   const { token, user } = res.data;
+      //   api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+
+      //   set({ user, token, loading: false });
+      // },
+
+      async login(email, password) {
+        const res = await api.post("/auth/login", { email, password });
+        const { accessToken } = res.data;
+        set({ token: accessToken });
+        api.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
       },
 
       register: async (email, password) => {
@@ -43,10 +58,15 @@ export const useAuthStore = create<AuthState>()(
         set({ token, user });
       },
 
-      logout: () => {
+      // logout: () => {
+      //   set({ token: null, user: null });
+      //   delete api.defaults.headers.common["Authorization"];
+      //   localStorage.removeItem("auth-storage");
+      // },
+
+      async logout() {
+        await api.post("/auth/logout");
         set({ token: null, user: null });
-        delete api.defaults.headers.common["Authorization"];
-        localStorage.removeItem("auth-storage");
       },
 
       checkAuth: async () => {
